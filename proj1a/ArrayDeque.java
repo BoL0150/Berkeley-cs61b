@@ -14,11 +14,11 @@ public class ArrayDeque<T> {
     }
     private void resize(int capacity){
         T[]a=(T[])new Object[capacity];
-        this.capacity=capacity;
         //从nextFirst右边的第一个点开始复制
         //到nextLast左边的第一个点复制结束
         for (int i=1;i<=size;i++)
-            a[i]=items[(nextFirst++)%capacity];
+            a[i]=items[(nextFirst++)%this.capacity];
+        this.capacity=capacity;
         nextFirst=0;
         nextLast=size+1;
         items=a;

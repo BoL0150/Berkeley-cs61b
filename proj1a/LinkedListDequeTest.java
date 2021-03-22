@@ -1,4 +1,4 @@
-import java.util.*;
+import static org.junit.Assert.*;
 /** Performs some basic linked list tests. */
 public class LinkedListDequeTest {
 	
@@ -87,8 +87,7 @@ public class LinkedListDequeTest {
 		lld1.addLast(6);
 		lld1.addLast(7);
 		lld1.addLast(8);
-
-		System.out.println(lld1.removeFirst());
+		lld1.addLast(9);
 		printTestStatus(passed);
 
 	}
