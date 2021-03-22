@@ -1,10 +1,10 @@
-public class LinkedListDeque<T> {
+public class LinkedListDeque<item>implements Deque<item> {
 
     private class Node{
         Node prev;
-        T item;
+        item item;
         Node next;
-        Node(Node prev,T item,Node next){
+        Node(Node prev,item item,Node next){
             this.item=item;
             this.prev=prev;
             this.next=next;
@@ -18,12 +18,12 @@ public class LinkedListDeque<T> {
         sentinel.prev=sentinel;
         size=0;
     }
-    public void addFirst(T item) {
+    public void addFirst(item item) {
         sentinel.next=new Node(sentinel,item,sentinel.next);
         sentinel.next.next.prev=sentinel.next;
         size++;
     }
-    public void addLast(T item) {
+    public void addLast(item item) {
         sentinel.prev=new Node(sentinel.prev,item,sentinel);
         sentinel.prev.prev.next=sentinel.prev;
         size++;
@@ -46,7 +46,7 @@ public class LinkedListDeque<T> {
         System.out.print(pos.item);
     }
 
-    public T removeFirst() {
+    public item removeFirst() {
         if (sentinel.next==sentinel)
             return null;
         Node temp=sentinel.next;
@@ -56,7 +56,7 @@ public class LinkedListDeque<T> {
         return temp.item;
     }
 
-    public T removeLast() {
+    public item removeLast() {
         if (sentinel.prev==sentinel)
             return null;
         Node temp=sentinel.prev;
@@ -66,7 +66,7 @@ public class LinkedListDeque<T> {
         return temp.item;
     }
 
-    public T get(int index) {
+    public item get(int index) {
         Node pos=sentinel.next;
         if (index>=size)
             return null;
@@ -75,12 +75,12 @@ public class LinkedListDeque<T> {
         }
         return pos.item;
     }
-    public T getRecursive(int index){
+    public item getRecursive(int index){
         if (index>=size)
             return null;
         return getRecursive(0,index,sentinel.next);
     }
-    private T getRecursive(int pos,int index,Node x){
+    private item getRecursive(int pos,int index,Node x){
         if (pos==index)
             return x.item;
         return getRecursive(pos+1,index,x.next);

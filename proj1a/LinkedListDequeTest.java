@@ -36,7 +36,7 @@ public class LinkedListDequeTest {
 	public static void addIsEmptySizeTest() {
 		System.out.println("Running add/isEmpty/Size test.");
 
-		ArrayDeque<String> lld1 = new ArrayDeque<>();
+		ArrayDeque3<String> lld1 = new ArrayDeque3<>();
 
 		boolean passed = checkEmpty(true, lld1.isEmpty());
 
@@ -66,7 +66,7 @@ public class LinkedListDequeTest {
 		System.out.println("Running add/remove test.");
 
 
-		ArrayDeque<Integer> lld1 = new ArrayDeque<>();
+		ArrayDeque3<Integer> lld1 = new ArrayDeque3<>();
 		// should be empty 
 		boolean passed = checkEmpty(true, lld1.isEmpty());
 
