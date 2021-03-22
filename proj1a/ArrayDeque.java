@@ -17,7 +17,7 @@ public class ArrayDeque<T> {
         //从nextFirst右边的第一个点开始复制
         //到nextLast左边的第一个点复制结束
         for (int i=1;i<=size;i++)
-            a[i]=items[(nextFirst++)%this.capacity];
+            a[i]=items[(++nextFirst)%this.capacity];
         this.capacity=capacity;
         nextFirst=0;
         nextLast=size+1;

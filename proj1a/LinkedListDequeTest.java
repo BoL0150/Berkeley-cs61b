@@ -79,6 +79,7 @@ public class LinkedListDequeTest {
 		// should be empty 
 		passed = checkEmpty(true, lld1.isEmpty()) && passed;
 
+		lld1.addLast(0);
 		lld1.addLast(1);
 		lld1.addLast(2);
 		lld1.addLast(3);
@@ -87,7 +88,7 @@ public class LinkedListDequeTest {
 		lld1.addLast(6);
 		lld1.addLast(7);
 		lld1.addLast(8);
-		lld1.addLast(9);
+		assertEquals(0,(long)lld1.get(0));
 		printTestStatus(passed);
 
 	}
