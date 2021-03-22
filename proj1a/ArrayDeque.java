@@ -2,37 +2,41 @@ public class ArrayDeque<T> {
 
     private int nextFirst;
     private int nextLast;
+    private int capacity;
     private T[]items;
     private int size;
     public ArrayDeque(){
         items=(T[])new Object[8];
-        nextFirst=items.length-1;
+        this.capacity=items.length;
+        nextFirst=capacity-1;
         nextLast=0;
         size=0;
     }
     private void resize(int capacity){
         T[]a=(T[])new Object[capacity];
-        System.arraycopy(items,0,a,0,nextLast);
-        int length=items.length-1-nextFirst;
-        if (nextFirst!=items.length-1)
-            System.arraycopy(items,nextFirst+1,a,capacity-length,length);
-        nextFirst=capacity-length-1;
+        this.capacity=capacity;
+        //从nextFirst右边的第一个点开始复制
+        //到nextLast左边的第一个点复制结束
+        for (int i=1;i<=size;i++)
+            a[i]=items[(nextFirst++)%capacity];
+        nextFirst=0;
+        nextLast=size+1;
         items=a;
     }
     public void addFirst(T item) {
-        if (nextFirst-1==nextLast)
-            resize(items.length*2);
+        if (size==capacity)
+            resize(capacity*2);
         items[nextFirst]=item;
         size++;
-        nextFirst--;
+        nextFirst=nextFirst==0?capacity-1:nextFirst-1;
     }
 
     public void addLast(T item) {
-        if (nextFirst-1==nextLast)
-            resize(items.length*2);
+        if (size==capacity)
+            resize(capacity*2);
         items[nextLast]=item;
         size++;
-        nextLast++;
+        nextLast=(nextLast+1)%capacity;
     }
 
     public boolean isEmpty() {
@@ -44,37 +48,37 @@ public class ArrayDeque<T> {
     }
 
     public void printDeque() {
-        for (int i=(nextFirst+1)%items.length;i!=nextLast-1;i=(i+1)%items.length)
+        for (int i=(nextFirst+1)%capacity;i!=nextLast-1;i=(i+1)%capacity)
             System.out.print(items[i]+" ");
         System.out.print(items[nextLast-1]);
     }
 
     public T removeFirst() {
-        if (nextFirst==items.length-1)return null;
-        nextFirst++;
+        if (size==0)return null;
+        nextFirst=(nextFirst+1)%capacity;
         T temp=items[nextFirst];
         items[nextFirst]=null;
         size--;
-        if (items.length>=16&&size<items.length/4)
-            resize(items.length/2);
+        if (capacity>=16&&size<capacity/4)
+            resize(capacity/2);
         return temp;
     }
 
     public T removeLast() {
-        if (nextLast==0)return null;
-        nextLast--;
+        if (size==0)return null;
+        nextLast=nextLast==0?capacity-1:nextLast-1;
         T temp=items[nextLast];
         items[nextLast]=null;
         size--;
-        if (items.length>=16&&size<items.length/4)
-            resize(items.length/2);
+        if (capacity>=16&&size<capacity/4)
+            resize(capacity/2);
         return temp;
     }
 
     public T get(int index) {
         if (index>=size)
             return null;
-        return items[(nextFirst+1+index)%items.length];
+        return items[(nextFirst+1+index)%capacity];
     }
 }
 

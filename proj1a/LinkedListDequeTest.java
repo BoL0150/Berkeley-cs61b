@@ -1,3 +1,4 @@
+import java.util.*;
 /** Performs some basic linked list tests. */
 public class LinkedListDequeTest {
 	
@@ -36,7 +37,7 @@ public class LinkedListDequeTest {
 	public static void addIsEmptySizeTest() {
 		System.out.println("Running add/isEmpty/Size test.");
 
-		ArrayDeque3<String> lld1 = new ArrayDeque3<>();
+		ArrayDeque<String> lld1 = new ArrayDeque<>();
 
 		boolean passed = checkEmpty(true, lld1.isEmpty());
 
@@ -66,7 +67,7 @@ public class LinkedListDequeTest {
 		System.out.println("Running add/remove test.");
 
 
-		ArrayDeque3<Integer> lld1 = new ArrayDeque3<>();
+		ArrayDeque<Integer> lld1 = new ArrayDeque<>();
 		// should be empty 
 		boolean passed = checkEmpty(true, lld1.isEmpty());
 
@@ -78,6 +79,16 @@ public class LinkedListDequeTest {
 		// should be empty 
 		passed = checkEmpty(true, lld1.isEmpty()) && passed;
 
+		lld1.addLast(1);
+		lld1.addLast(2);
+		lld1.addLast(3);
+		lld1.addLast(4);
+		lld1.addLast(5);
+		lld1.addLast(6);
+		lld1.addLast(7);
+		lld1.addLast(8);
+
+		System.out.println(lld1.removeFirst());
 		printTestStatus(passed);
 
 	}
