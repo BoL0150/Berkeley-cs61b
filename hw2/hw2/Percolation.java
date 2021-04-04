@@ -26,7 +26,7 @@ public class Percolation {
                 {-1,0}
         };
         if (row<0||row>=N||col<0||col>=N)
-            throw new IllegalArgumentException("row and col must between 0 and N-1");
+            throw new IndexOutOfBoundsException("row and col must between 0 and N-1");
         if (isOpen(row,col))return;
         grid[row][col]=true;
         numberOfOpenSites++;
@@ -60,13 +60,13 @@ public class Percolation {
     // is the site (row, col) open?
     public boolean isOpen(int row, int col){
         if (row<0||row>=N||col<0||col>=N)
-            throw new IllegalArgumentException("row and col must between 0 and N-1");
+            throw new IndexOutOfBoundsException("row and col must between 0 and N-1");
         return grid[row][col];
     }
     // is the site (row, col) full?
     public boolean isFull(int row, int col){
         if (row<0||row>=N||col<0||col>=N)
-            throw new IllegalArgumentException("row and col must between 0 and N-1");
+            throw new IndexOutOfBoundsException("row and col must between 0 and N-1");
         //在isFull中使用UFwithoutBackWash
         return UFwithoutBackWash.connected(xyTo1D(row, col), N * N);
     }
