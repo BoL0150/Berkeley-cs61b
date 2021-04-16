@@ -9,12 +9,12 @@ public class OomageTestUtility {
         for (Oomage o:oomages){
             int bucketNum = (o.hashCode() & 0x7FFFFFFF) % M;
             buckets[bucketNum]++;
-            if (buckets[bucketNum]>=oomages.size()/2.5){
+            if (buckets[bucketNum]>oomages.size()/2.5){
                 return false;
             }
         }
         for (int i=0;i<buckets.length;i++){
-            if (buckets[i]<=oomages.size()/50.0)
+            if (buckets[i]<oomages.size()/50.0)
                 return false;
         }
         return true;

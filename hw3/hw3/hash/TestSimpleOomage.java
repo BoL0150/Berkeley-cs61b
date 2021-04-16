@@ -24,10 +24,12 @@ public class TestSimpleOomage {
 
     @Test
     public void testHashCodePerfect() {
-        SimpleOomage ooA = new SimpleOomage(20, 10, 55);
-        SimpleOomage ooA2 = new SimpleOomage(10, 20, 55);
-        SimpleOomage ooA3 = new SimpleOomage(20, 10, 55);
+        SimpleOomage ooA = new SimpleOomage(0, 5, 0);
+        SimpleOomage ooA2 = new SimpleOomage(0, 0, 155);
+        SimpleOomage ooA3 = new SimpleOomage(0, 5, 0);
         assertNotEquals(ooA.hashCode(),ooA2.hashCode());
+//        System.out.println(ooA.hashCode());
+//        System.out.println(ooA3.hashCode());
         assertEquals(ooA.hashCode(),ooA3.hashCode());
     }
 
