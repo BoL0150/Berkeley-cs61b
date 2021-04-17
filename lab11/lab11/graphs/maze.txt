@@ -1,0 +1,9 @@
+N = 20
+rseed = 4
+
+%MazeType = SINGLE_GAP
+MazeType = POPEN_SOLVABLE
+%MazeType = BLANK
+
+pOpen = 0.65
+DRAW_DELAY_MS = 30
