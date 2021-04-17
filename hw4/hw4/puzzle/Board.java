@@ -1,6 +1,7 @@
 package hw4.puzzle;
 
 import edu.princeton.cs.algs4.Queue;
+import org.junit.Test;
 
 public class Board implements WorldState{
 
@@ -19,6 +20,7 @@ public class Board implements WorldState{
                 cnt++;
             }
         }
+        goal[N-1][N-1]=0;
         for (int i=0;i<N;i++){
             for (int j=0;j<N;j++){
                 start[i][j]=tiles[i][j];
@@ -62,6 +64,7 @@ public class Board implements WorldState{
         if (y == this) return true;
         if (y == null || y.getClass() != this.getClass()) return false;
         Board a=(Board)y;
+        if (a.size()!=this.size()) return false;
         for (int i=0;i<N;i++)
             for (int j=0;j<N;j++)
                 if (a.tileAt(i,j)!=this.tileAt(i,j))
@@ -123,4 +126,8 @@ public class Board implements WorldState{
         return s.toString();
     }
 
+    @Override
+    public int hashCode() {
+        return 0;
+    }
 }
