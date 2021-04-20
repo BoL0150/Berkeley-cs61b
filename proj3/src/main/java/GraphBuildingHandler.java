@@ -2,7 +2,6 @@ import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
-import javax.xml.soap.Node;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
