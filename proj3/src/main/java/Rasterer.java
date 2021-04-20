@@ -1,6 +1,6 @@
 import java.util.HashMap;
 import java.util.Map;
-
+import javax.xml.soap.Node;
 /**
  * This class provides all code necessary to take a query box and produce
  * a query result. The getMapRaster method must return a Map containing all
