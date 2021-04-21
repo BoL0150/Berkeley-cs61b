@@ -50,7 +50,7 @@ public class Rasterer {
      *                    forget to set this to true on success! <br>
      */
     public Map<String, Object> getMapRaster(Map<String, Double> params) {
-//        System.out.println(params);
+        System.out.println(params);
         Map<String, Object> results = new HashMap<>();
 
         double lrlon = params.get("lrlon");
@@ -119,6 +119,7 @@ public class Rasterer {
     }
 
     private int commuteDepth(double ullon, double lrlon, double width) {
+
         double desiredLonDPP = (lrlon - ullon) / width;
         double n = Math.log(LONG_WIDTH / (desiredLonDPP * TILE_SIZE)) / Math.log(2.0);
         int depth = (int) Math.ceil(n);

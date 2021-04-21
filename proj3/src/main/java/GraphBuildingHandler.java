@@ -64,6 +64,10 @@ public class GraphBuildingHandler extends DefaultHandler {
      * @throws SAXException Any SAX exception, possibly wrapping another exception.
      * @see Attributes
      */
+    private long id;
+    private double lon;
+    private double lat;
+    private String wayName;
     //parser解析器调用了这个事件处理程序中的该方法，参数是解析器传进来的，对应正在解析的element的属性
     //xml文件中先出现所有的点，然后再出现way，通过对之前已经出现的点的引用，将它们连接成路
     @Override
@@ -80,9 +84,9 @@ public class GraphBuildingHandler extends DefaultHandler {
 //            System.out.println("Node lat: " + attributes.getValue("lat"));
 
             /*Use the above information to save a "node" to somewhere. */
-            long id = Long.parseLong(attributes.getValue("id"));
-            double lon = Double.parseDouble(attributes.getValue("lon"));
-            double lat = Double.parseDouble(attributes.getValue("lat"));
+            id = Long.parseLong(attributes.getValue("id"));
+            lon = Double.parseDouble(attributes.getValue("lon"));
+            lat = Double.parseDouble(attributes.getValue("lat"));
             g.addNode(id, lon, lat);
 
         } else if (qName.equals("way")) {
@@ -115,10 +119,11 @@ public class GraphBuildingHandler extends DefaultHandler {
 //                System.out.println("Highway type: " + v);
                 /*  Figure out whether this way and its connections are valid. */
                 /* Hint: Setting a "flag" is good enough! */
-                if (ALLOWED_HIGHWAY_TYPES.contains(attributes.getValue("v"))) {
+                if (ALLOWED_HIGHWAY_TYPES.contains(v)) {
                     validWay = true;
                 }
             } else if (k.equals("name")) {
+                wayName = v;
 //                System.out.println("Way Name: " + v);
             }
 //            System.out.println("Tag with k=" + k + ", v=" + v + ".");
@@ -130,6 +135,7 @@ public class GraphBuildingHandler extends DefaultHandler {
             node this tag belongs to. Remember XML is parsed top-to-bottom, so probably it's the
             last node that you looked at (check the first if-case). */
 //            System.out.println("Node's name: " + attributes.getValue("v"));
+            g.addName(id, lon, lat, attributes.getValue("v"));
         }
     }
 
@@ -152,7 +158,7 @@ public class GraphBuildingHandler extends DefaultHandler {
             chance to actually connect the nodes together if the way is valid. */
             //如果当前的way元素是合法的话，将way中的所有node连接起来
             if (validWay) {
-                g.addWay(ways);
+                g.addWay(ways, wayName);
             }
 //            System.out.println("Finishing a way...");
         }

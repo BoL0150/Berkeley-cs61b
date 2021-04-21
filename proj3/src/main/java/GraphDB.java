@@ -32,10 +32,15 @@ public class GraphDB {
      * @param dbPath Path to the XML file to be parsed.
      */
     //每个序号对应的点
-    private static Map<Long, Node> nodes = new HashMap<>();
+    public static Map<Long, Node> nodes = new HashMap<>();
     //每个点相邻的点
     private static Map<Long, ArrayList<Long>> adjNode = new HashMap<>();
-//    private static class Edge{
+    //一个名字可能对应多个点
+    private static Map<String, ArrayList<Long>> names = new HashMap<>();
+    //某一点对应的地点位置
+//    private static Map<Long, Loaction> locations = new HashMap<>();
+
+    //    private static class Edge{
 //        private Node v;
 //        private Node w;
 //        private double weight;
@@ -46,10 +51,29 @@ public class GraphDB {
 //            this.weight = weight;
 //        }
 //    }
-    private static class Node {
-        private final long id;
-        private final double lon;
-        private final double lat;
+//    private static class Loaction{
+//        private final Node node;
+//        private final String name;
+//
+//        public Loaction(String name, Node node) {
+//            this.name = name;
+//            this.node = node;
+//        }
+//
+//        public Node getNode() {
+//            return node;
+//        }
+//
+//        public String getName() {
+//            return name;
+//        }
+//    }
+    public static class Node{
+        public final long id;
+        public final double lon;
+        public final double lat;
+        public String name = null;
+        public String wayName = null;
 
         public Node(long id, double lon, double lat) {
             this.id = id;
@@ -123,6 +147,7 @@ public class GraphDB {
      * @return An iterable of the ids of the neighbors of v.
      */
     Iterable<Long> adjacent(long v) {
+        validateVertex(nodes.get(v));
         return adjNode.get(v);
     }
     /**
@@ -189,8 +214,7 @@ public class GraphDB {
         double closest = Double.MAX_VALUE;
         long ret=0;
         for (long id : vertices()) {
-            Node x = nodes.get(id);
-            double distance = distance(x.lon, x.lat, lon, lat);
+            double distance = distance(lon(id), lat(id), lon, lat);
             if (distance < closest) {
                 closest = distance;
                 ret = id;
@@ -206,6 +230,7 @@ public class GraphDB {
      * @return The longitude of the vertex.
      */
     double lon(long v) {
+        validateVertex(nodes.get(v));
         return nodes.get(v).lon;
     }
 
@@ -216,7 +241,24 @@ public class GraphDB {
      * @return The latitude of the vertex.
      */
     double lat(long v) {
+        validateVertex(nodes.get(v));
         return nodes.get(v).lat;
+    }
+    String getName(long v) {
+        if (nodes.get(v).name == null) {
+            throw new IllegalArgumentException();
+        }
+        return nodes.get(v).name;
+    }
+    void addName(long id, double lon, double lat, String locationName) {
+        //将名字统一转换成小写
+        String cleanedName = cleanString(locationName);
+
+        if (!names.containsKey(cleanedName)) {
+            names.put(cleanedName, new ArrayList<>());
+        }
+        names.get(cleanedName).add(id);
+        nodes.get(id).name = locationName;
     }
 
     void addNode(long id, double lon, double lat) {
@@ -225,12 +267,14 @@ public class GraphDB {
         adjNode.put(id, new ArrayList<>());
     }
 
-    void addWay(ArrayList<Long> ways) {
+    void addWay(ArrayList<Long> ways,String wayName) {
         for (int i = 1; i < ways.size(); i++) {
             long id1 = ways.get(i - 1);
             long id2 = ways.get(i);
             addEdge(nodes.get(id1), nodes.get(id2));
+            nodes.get(id1).wayName = wayName;
         }
+        nodes.get(ways.get(ways.size() - 1)).wayName = wayName;
     }
     void addEdge(Node v, Node w) {
         validateVertex(v);
