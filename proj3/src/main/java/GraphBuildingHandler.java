@@ -67,7 +67,8 @@ public class GraphBuildingHandler extends DefaultHandler {
     private long id;
     private double lon;
     private double lat;
-    private String wayName;
+    private String wayName = "";
+    private long wayID;
     //parser解析器调用了这个事件处理程序中的该方法，参数是解析器传进来的，对应正在解析的element的属性
     //xml文件中先出现所有的点，然后再出现way，通过对之前已经出现的点的引用，将它们连接成路
     @Override
@@ -98,6 +99,7 @@ public class GraphBuildingHandler extends DefaultHandler {
             //创建一个List，记录这个way标签中的node
             ways = new ArrayList<>();
             validWay = false;
+            wayID = Long.parseLong(attributes.getValue("id"));
         } else if (activeState.equals("way") && qName.equals("nd")) {
             /* While looking at a way, we found a <nd...> tag. */
             //在tag中遇到node，加入list
@@ -119,7 +121,7 @@ public class GraphBuildingHandler extends DefaultHandler {
 //                System.out.println("Highway type: " + v);
                 /*  Figure out whether this way and its connections are valid. */
                 /* Hint: Setting a "flag" is good enough! */
-                if (ALLOWED_HIGHWAY_TYPES.contains(v)) {
+                if (ALLOWED_HIGHWAY_TYPES.contains(attributes.getValue("v"))) {
                     validWay = true;
                 }
             } else if (k.equals("name")) {
@@ -159,6 +161,7 @@ public class GraphBuildingHandler extends DefaultHandler {
             //如果当前的way元素是合法的话，将way中的所有node连接起来
             if (validWay) {
                 g.addWay(ways, wayName);
+                wayName = "";
             }
 //            System.out.println("Finishing a way...");
         }

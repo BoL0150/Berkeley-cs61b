@@ -14,7 +14,7 @@ public class Router {
 
     private static GraphDB.Node start;
     private static GraphDB.Node destination;
-
+    private static GraphDB graph;
     private static class SearchNode implements Comparable<SearchNode> {
         public long id;
         public SearchNode parent;
@@ -40,7 +40,7 @@ public class Router {
     }
 
     private static double distanceToDest(long id) {
-        GraphDB.Node v = GraphDB.nodes.get(id);
+        GraphDB.Node v = graph.nodes.get(id);
         return GraphDB.distance(v.lon, v.lat, destination.lon, destination.lat);
     }
 
@@ -58,9 +58,9 @@ public class Router {
      */
     public static List<Long> shortestPath(GraphDB g, double stlon, double stlat,
                                           double destlon, double destlat) {
-
-        start = GraphDB.nodes.get(g.closest(stlon, stlat));
-        destination = GraphDB.nodes.get(g.closest(destlon, destlat));
+        graph = g;
+        start = graph.nodes.get(g.closest(stlon, stlat));
+        destination = graph.nodes.get(g.closest(destlon, destlat));
         Map<Long, Boolean> marked = new HashMap<>();
         PriorityQueue<SearchNode> pq = new PriorityQueue<>();
         pq.offer(new SearchNode(start.id, null, 0));
@@ -70,7 +70,7 @@ public class Router {
             marked.put(v.id, true);
             for (long w : g.adjacent(v.id)) {
                 if (!marked.containsKey(w) || marked.get(w) == false) {
-                    pq.offer(new SearchNode(w, v, v.distanceToStart + distance(w, v.id)));
+                    pq.offer(new SearchNode(w, v, v.distanceToStart + distance(g, w, v.id)));
                 }
             }
         }
@@ -83,9 +83,9 @@ public class Router {
         Collections.reverse(path);
         return path; // FIXME
     }
-    private static double distance(long id1, long id2) {
-        GraphDB.Node v1 = GraphDB.nodes.get(id1);
-        GraphDB.Node v2 = GraphDB.nodes.get(id2);
+    private static double distance(GraphDB graph,long id1, long id2) {
+        GraphDB.Node v1 = graph.nodes.get(id1);
+        GraphDB.Node v2 = graph.nodes.get(id2);
         return GraphDB.distance(v1.lon, v1.lat, v2.lon, v2.lat);
     }
     private static boolean isGoal(SearchNode v) {
@@ -101,10 +101,78 @@ public class Router {
      * route.
      */
     public static List<NavigationDirection> routeDirections(GraphDB g, List<Long> route) {
-        return null; // FIXME
+
+        double distance = 0;
+        int relativeDirection = NavigationDirection.START;
+        ArrayList<NavigationDirection> navigationList = new ArrayList<>();
+        //将输入的点转化为连接点的边，如果边的名字相同，则说明在同一条路上，否则就不在同一条路上
+        ArrayList<GraphDB.Edge> ways = getWays(g, route);
+        if (ways.size() == 1) {
+            navigationList.add(new NavigationDirection(NavigationDirection.START, ways.get(0).getName(), ways.get(0).getWeight()));
+            return navigationList;
+        }
+        for (int i = 1; i < ways.size(); i++) {
+            GraphDB.Edge preEdge = ways.get(i - 1);
+            GraphDB.Edge nextEdge = ways.get(i);
+
+            long prevVertex = route.get(i - 1);
+            long curVertex = route.get(i);
+            long nextVertex = route.get(i + 1);
+
+            String preWayName = preEdge.getName();
+            String nextWayName = nextEdge.getName();
+
+            distance += preEdge.getWeight();
+            //如果前后两条路的名字不一样，则说明切换了路线，更新NavigationList，清零distance
+            if (!preWayName.equals(nextWayName)) {
+                double preBearing = g.bearing(prevVertex, curVertex);
+                double nextBearing = g.bearing(curVertex, nextVertex);
+                navigationList.add(new NavigationDirection(relativeDirection, preWayName, distance));
+
+                relativeDirection = relativeDirection(preBearing, nextBearing);
+                distance = 0;
+            }
+            if (i == ways.size() - 1) {
+                distance += nextEdge.getWeight();
+                navigationList.add(new NavigationDirection(relativeDirection, nextWayName, distance));
+            }
+        }
+        return navigationList;
     }
 
-
+    private static ArrayList<GraphDB.Edge> getWays(GraphDB g, List<Long> route) {
+        ArrayList<GraphDB.Edge> ways = new ArrayList<>();
+        for (int i = 1; i < route.size(); i++) {
+            long curVertex = route.get(i - 1);
+            long nextVertex = route.get(i);
+            for (GraphDB.Edge e : g.neighbors(curVertex)) {
+                if (e.other(curVertex) == nextVertex) {
+                    ways.add(e);
+                }
+            }
+        }
+        return ways;
+    }
+    private static int relativeDirection(double prevBearing, double curBearing) {
+        double relativeBearing = curBearing - prevBearing;
+        double absBearing = Math.abs(relativeBearing);
+        if (absBearing > 180) {
+            absBearing = 360 - absBearing;
+            relativeBearing *= -1;
+        }
+        if (absBearing <= 15) {
+            return NavigationDirection.STRAIGHT;
+        }
+        if (absBearing <= 30) {
+            return relativeBearing < 0 ? NavigationDirection.SLIGHT_LEFT : NavigationDirection.SLIGHT_RIGHT;
+        }
+        if (absBearing <= 100) {
+            return relativeBearing < 0 ? NavigationDirection.LEFT : NavigationDirection.RIGHT;
+        }
+        else {
+            return relativeBearing < 0 ? NavigationDirection.SHARP_LEFT : NavigationDirection.SHARP_RIGHT;
+        }
+    }
     /**
      * Class to represent a navigation direction, which consists of 3 attributes:
      * a direction to go, a way, and the distance to travel for.
@@ -156,6 +224,18 @@ public class Router {
             this.direction = STRAIGHT;
             this.way = UNKNOWN_ROAD;
             this.distance = 0.0;
+        }
+
+        /**
+         *
+         * @param direction
+         * @param way
+         * @param distance
+         */
+        public NavigationDirection(int direction, String way, double distance) {
+            this.direction = direction;
+            this.way = way;
+            this.distance = distance;
         }
 
         public String toString() {

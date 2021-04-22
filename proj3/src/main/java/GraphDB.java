@@ -6,10 +6,7 @@ import java.io.IOException;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Graph for storing all of the intersection (vertex) and road (edge) information.
@@ -32,48 +29,44 @@ public class GraphDB {
      * @param dbPath Path to the XML file to be parsed.
      */
     //每个序号对应的点
-    public static Map<Long, Node> nodes = new HashMap<>();
+    public Map<Long, Node> nodes = new HashMap<>();
     //每个点相邻的点
-    private static Map<Long, ArrayList<Long>> adjNode = new HashMap<>();
+    private Map<Long, ArrayList<Long>> adjNode = new HashMap<>();
     //一个名字可能对应多个点
-    private static Map<String, ArrayList<Long>> names = new HashMap<>();
-    //某一点对应的地点位置
-//    private static Map<Long, Loaction> locations = new HashMap<>();
+    private Map<String, ArrayList<Long>> names = new HashMap<>();
 
-    //    private static class Edge{
-//        private Node v;
-//        private Node w;
-//        private double weight;
-//
-//        public Edge(Node v, Node w, double weight) {
-//            this.v = v;
-//            this.w = w;
-//            this.weight = weight;
-//        }
-//    }
-//    private static class Loaction{
-//        private final Node node;
-//        private final String name;
-//
-//        public Loaction(String name, Node node) {
-//            this.name = name;
-//            this.node = node;
-//        }
-//
-//        public Node getNode() {
-//            return node;
-//        }
-//
-//        public String getName() {
-//            return name;
-//        }
-//    }
+    private Map<Long,ArrayList<Edge>> adjEdge = new HashMap<>();
+
+    public static class Edge{
+        private long v;
+        private long w;
+        private double weight;
+        private String name;
+
+        public Edge(long v, long w, double weight, String name) {
+            this.v = v;
+            this.w = w;
+            this.weight = weight;
+            this.name = name;
+        }
+        public long either(){ return v;}
+        public long other(long vertex){
+            return vertex==v?w:v;
+        }
+
+        public double getWeight() {
+            return weight;
+        }
+
+        public String getName() {
+            return name;
+        }
+    }
     public static class Node{
         public final long id;
         public final double lon;
         public final double lat;
         public String name = null;
-        public String wayName = null;
 
         public Node(long id, double lon, double lat) {
             this.id = id;
@@ -149,6 +142,10 @@ public class GraphDB {
     Iterable<Long> adjacent(long v) {
         validateVertex(nodes.get(v));
         return adjNode.get(v);
+    }
+
+    Iterable<Edge> neighbors(long v) {
+        return adjEdge.get(v);
     }
     /**
      * Returns the great-circle distance between vertices v and w in miles.
@@ -265,24 +262,25 @@ public class GraphDB {
         Node n = new Node(id, lon, lat);
         nodes.put(id, n);
         adjNode.put(id, new ArrayList<>());
+        adjEdge.put(id, new ArrayList<>());
     }
 
-    void addWay(ArrayList<Long> ways,String wayName) {
+    void addWay(ArrayList<Long> ways, String wayName) {
         for (int i = 1; i < ways.size(); i++) {
-            long id1 = ways.get(i - 1);
-            long id2 = ways.get(i);
-            addEdge(nodes.get(id1), nodes.get(id2));
-            nodes.get(id1).wayName = wayName;
+            addEdge(ways.get(i - 1), ways.get(i), wayName);
         }
-        nodes.get(ways.get(ways.size() - 1)).wayName = wayName;
     }
-    void addEdge(Node v, Node w) {
-        validateVertex(v);
-        validateVertex(w);
-        adjNode.get(v.id).add(w.id);
-        adjNode.get(w.id).add(v.id);
+
+    void addEdge(long v, long w, String wayName) {
+        validateVertex(nodes.get(v));
+        validateVertex(nodes.get(w));
+        adjNode.get(v).add(w);
+        adjNode.get(w).add(v);
+        adjEdge.get(v).add(new Edge(v, w, distance(v, w), wayName));
+        adjEdge.get(w).add(new Edge(v, w, distance(v, w), wayName));
     }
     void validateVertex(Node v) {
+
         if (!nodes.containsKey(v.id)) {
             throw new IllegalArgumentException("Vertex " + v + "is not in the graph");
         }
