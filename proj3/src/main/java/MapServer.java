@@ -300,7 +300,7 @@ public class MapServer {
     public static List<Map<String, Object>> getLocations(String locationName) {
         ArrayList<Long> nodes = graph.getLocations(locationName);
         //通常以Map<String,Object>的形式存储键值对,同一个名字对应的点不唯一，所以使用List来存储所有与该名字对应的点
-        List<Map<String, Object>> result = new ArrayList<>();
+        List<Map<String, Object>> result = new LinkedList<>();
         for (Long i : nodes) {
             Map<String, Object> nodeInfo = new HashMap<>();
             GraphDB.Node node = graph.locations.get(i);

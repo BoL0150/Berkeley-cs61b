@@ -282,10 +282,6 @@ public class GraphDB {
     }
 
     void addNode(Long id, double lon, double lat) {
-//        if (id==366086641) {
-//            System.out.println("fuckyou!!!!");
-//            System.out.println(nodes.get(id));
-//        }
         Node n = new Node(id, lon, lat);
         nodes.put(id, n);
         adjNode.put(id, new ArrayList<>());
