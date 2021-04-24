@@ -271,7 +271,8 @@ public class GraphDB {
 
     //获取对应名字的点
     ArrayList<Long> getLocations(String name) {
-        return names.get(name);
+
+        return names.get(cleanString(name));
     }
 
     void addNode(long id, double lon, double lat) {
@@ -304,6 +305,10 @@ public class GraphDB {
     }
 
     List<String> keysWithPrefixOf(String prefix) {
-        return (List<String>) trie.keyWithPrefix(prefix);
+        List<String> result = new ArrayList<>();
+        for (String key : trie.keyWithPrefix(cleanString(prefix))) {
+            result.add(key);
+        }
+        return result;
     }
 }
