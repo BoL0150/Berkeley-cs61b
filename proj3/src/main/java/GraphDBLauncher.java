@@ -16,7 +16,7 @@ public class GraphDBLauncher {
 
         /* Convert iterable to a list. */
         List<Long> vertices = new ArrayList<Long>();
-        for (long v : verticesIterable) {
+        for (Long v : verticesIterable) {
             vertices.add(v);
         }
 
@@ -29,7 +29,7 @@ public class GraphDBLauncher {
             }
         }
 
-        long v = g.closest(-122.258207, 37.875352);
+        Long v = g.closest(-122.258207, 37.875352);
         System.out.print("The vertex number closest to -122.258207, 37.875352 is " + v + ", which");
         System.out.println(" has longitude, latitude of: " + g.lon(v) + ", " + g.lat(v));
 

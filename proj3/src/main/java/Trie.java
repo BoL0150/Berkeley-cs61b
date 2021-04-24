@@ -47,9 +47,9 @@ public class Trie<Value> {
     }
 
     public Iterable<String> keys() {
-        return keyWithPrefix("");
+        return keysWithPrefix("");
     }
-    public Iterable<String> keyWithPrefix(String s) {
+    public Iterable<String> keysWithPrefix(String s) {
         Queue<String> queue = new LinkedList<>();
         collect(get(s, root, 0), s, queue);
         return queue;

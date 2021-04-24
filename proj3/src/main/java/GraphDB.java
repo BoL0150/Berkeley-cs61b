@@ -28,7 +28,7 @@ public class GraphDB {
      *
      * @param dbPath Path to the XML file to be parsed.
      */
-    //每个序号对应的点
+    //每个序号对应的点，在调用了clean方法后，就剩下图中所有相连的点，该Map在搜索最短路径时使用
     public Map<Long, Node> nodes = new HashMap<>();
     //每个点相邻的点
     private Map<Long, ArrayList<Long>> adjNode = new HashMap<>();
@@ -36,28 +36,30 @@ public class GraphDB {
     private Map<String, ArrayList<Long>> names = new HashMap<>();
 
     private Map<Long, ArrayList<Edge>> adjEdge = new HashMap<>();
-
+    //地图中所有的点，不管是否相连。在搜索location时使用
+    public Map<Long, Node> locations = new HashMap<>();
+    //Trie，字符串匹配时使用
     private Trie<Long> trie = new Trie<>();
 
     public static class Edge {
-        private long v;
-        private long w;
+        private Long v;
+        private Long w;
         private double weight;
         private String name;
 
-        public Edge(long v, long w, double weight, String name) {
+        public Edge(Long v, Long w, double weight, String name) {
             this.v = v;
             this.w = w;
             this.weight = weight;
             this.name = name;
         }
 
-        public long either() {
+        public Long either() {
             return v;
         }
 
-        public long other(long vertex) {
-            return vertex == v ? w : v;
+        public Long other(Long vertex) {
+            return vertex.equals(v) ? w : v;
         }
 
         public double getWeight() {
@@ -70,12 +72,12 @@ public class GraphDB {
     }
 
     public static class Node {
-        public final long id;
+        public final Long id;
         public final double lon;
         public final double lat;
         public String name = null;
 
-        public Node(long id, double lon, double lat) {
+        public Node(Long id, double lon, double lat) {
             this.id = id;
             this.lon = lon;
             this.lat = lat;
@@ -124,6 +126,7 @@ public class GraphDB {
         while (it.hasNext()) {
             Map.Entry<Long, ArrayList<Long>> entry = it.next();
             if (entry.getValue().isEmpty()) {
+                //只清理nodes和adjNode
                 nodes.remove(entry.getKey());
                 it.remove();
             }
@@ -146,12 +149,12 @@ public class GraphDB {
      * @param v The id of the vertex we are looking adjacent to.
      * @return An iterable of the ids of the neighbors of v.
      */
-    Iterable<Long> adjacent(long v) {
+    Iterable<Long> adjacent(Long v) {
         validateVertex(nodes.get(v));
         return adjNode.get(v);
     }
 
-    Iterable<Edge> neighbors(long v) {
+    Iterable<Edge> neighbors(Long v) {
         return adjEdge.get(v);
     }
 
@@ -164,7 +167,7 @@ public class GraphDB {
      * @param w The id of the second vertex.
      * @return The great-circle distance between the two locations from the graph.
      */
-    double distance(long v, long w) {
+    double distance(Long v, Long w) {
         return distance(lon(v), lat(v), lon(w), lat(w));
     }
 
@@ -192,7 +195,7 @@ public class GraphDB {
      * @param w The id of the second vertex.
      * @return The initial bearing between the vertices.
      */
-    double bearing(long v, long w) {
+    double bearing(Long v, Long w) {
         return bearing(lon(v), lat(v), lon(w), lat(w));
     }
 
@@ -217,8 +220,8 @@ public class GraphDB {
      */
     long closest(double lon, double lat) {
         double closest = Double.MAX_VALUE;
-        long ret = 0;
-        for (long id : vertices()) {
+        Long ret = 0l;
+        for (Long id : vertices()) {
             double distance = distance(lon(id), lat(id), lon, lat);
             if (distance < closest) {
                 closest = distance;
@@ -234,7 +237,7 @@ public class GraphDB {
      * @param v The id of the vertex.
      * @return The longitude of the vertex.
      */
-    double lon(long v) {
+    double lon(Long v) {
         validateVertex(nodes.get(v));
         return nodes.get(v).lon;
     }
@@ -245,28 +248,31 @@ public class GraphDB {
      * @param v The id of the vertex.
      * @return The latitude of the vertex.
      */
-    double lat(long v) {
+    double lat(Long v) {
         validateVertex(nodes.get(v));
         return nodes.get(v).lat;
     }
 
-    String getName(long v) {
+    String getName(Long v) {
         if (nodes.get(v).name == null) {
             throw new IllegalArgumentException();
         }
         return nodes.get(v).name;
     }
 
-    void addName(long id, double lon, double lat, String locationName) {
-        //将名字统一转换成小写，去除空格
+    void addName(Long id, double lon, double lat, String locationName) {
+        //将名字统一转换成小写
         String cleanedName = cleanString(locationName);
-
         if (!names.containsKey(cleanedName)) {
             names.put(cleanedName, new ArrayList<>());
         }
+        //names中存放的是cleanString和id列表，方便我们根据cleanString获取对应的所有点的id
         names.get(cleanedName).add(id);
+        //Node对象中的name属性存放的是真实的locationName，通过names获取id后，再用nodes获取id的真正名字
         nodes.get(id).name = locationName;
-        trie.put(locationName, id);
+        locations.get(id).name = locationName;
+        //trie里存放的是cleanString，方便检索
+        trie.put(cleanedName, id);
     }
 
     //获取对应名字的点
@@ -275,11 +281,16 @@ public class GraphDB {
         return names.get(cleanString(name));
     }
 
-    void addNode(long id, double lon, double lat) {
+    void addNode(Long id, double lon, double lat) {
+//        if (id==366086641) {
+//            System.out.println("fuckyou!!!!");
+//            System.out.println(nodes.get(id));
+//        }
         Node n = new Node(id, lon, lat);
         nodes.put(id, n);
         adjNode.put(id, new ArrayList<>());
         adjEdge.put(id, new ArrayList<>());
+        locations.put(id, n);
     }
 
     void addWay(ArrayList<Long> ways, String wayName) {
@@ -288,7 +299,7 @@ public class GraphDB {
         }
     }
 
-    void addEdge(long v, long w, String wayName) {
+    void addEdge(Long v, Long w, String wayName) {
         validateVertex(nodes.get(v));
         validateVertex(nodes.get(w));
         adjNode.get(v).add(w);
@@ -306,9 +317,13 @@ public class GraphDB {
 
     List<String> keysWithPrefixOf(String prefix) {
         List<String> result = new ArrayList<>();
-        for (String key : trie.keyWithPrefix(cleanString(prefix))) {
-            result.add(key);
+        //用cleanString从trie中获得的也是以其为前缀的cleanString，我们还需要找到cleanString对应的真实名字
+        for (String key : trie.keysWithPrefix(cleanString(prefix))) {
+            for (Long id : names.get(key)) {
+                result.add(locations.get(id).name);
+            }
         }
+        System.out.println(result);
         return result;
     }
 }

@@ -64,11 +64,11 @@ public class GraphBuildingHandler extends DefaultHandler {
      * @throws SAXException Any SAX exception, possibly wrapping another exception.
      * @see Attributes
      */
-    private long id;
+    private Long id;
     private double lon;
     private double lat;
     private String wayName = "";
-    private long wayID;
+    private Long wayID;
     //parser解析器调用了这个事件处理程序中的该方法，参数是解析器传进来的，对应正在解析的element的属性
     //xml文件中先出现所有的点，然后再出现way，通过对之前已经出现的点的引用，将它们连接成路
     @Override
@@ -138,6 +138,7 @@ public class GraphBuildingHandler extends DefaultHandler {
             last node that you looked at (check the first if-case). */
 //            System.out.println("Node's name: " + attributes.getValue("v"));
             g.addName(id, lon, lat, attributes.getValue("v"));
+//            System.out.println("GraphBuildingHandler_ID:" + id);
         }
     }
 

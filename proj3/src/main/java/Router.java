@@ -16,12 +16,12 @@ public class Router {
     private static GraphDB.Node destination;
     private static GraphDB graph;
     private static class SearchNode implements Comparable<SearchNode> {
-        public long id;
+        public Long id;
         public SearchNode parent;
         public double distanceToStart;
         public double priorit;
 
-        public SearchNode(long id, SearchNode parent,double distanceToStart) {
+        public SearchNode(Long id, SearchNode parent,double distanceToStart) {
             this.id = id;
             this.parent = parent;
             this.distanceToStart = distanceToStart;
@@ -39,7 +39,7 @@ public class Router {
         }
     }
 
-    private static double distanceToDest(long id) {
+    private static double distanceToDest(Long id) {
         GraphDB.Node v = graph.nodes.get(id);
         return GraphDB.distance(v.lon, v.lat, destination.lon, destination.lat);
     }
@@ -68,7 +68,7 @@ public class Router {
             SearchNode v = pq.poll();
             //标记为经过
             marked.put(v.id, true);
-            for (long w : g.adjacent(v.id)) {
+            for (Long w : g.adjacent(v.id)) {
                 if (!marked.containsKey(w) || marked.get(w) == false) {
                     pq.offer(new SearchNode(w, v, v.distanceToStart + distance(g, w, v.id)));
                 }
@@ -83,7 +83,7 @@ public class Router {
         Collections.reverse(path);
         return path; // FIXME
     }
-    private static double distance(GraphDB graph,long id1, long id2) {
+    private static double distance(GraphDB graph,Long id1, Long id2) {
         GraphDB.Node v1 = graph.nodes.get(id1);
         GraphDB.Node v2 = graph.nodes.get(id2);
         return GraphDB.distance(v1.lon, v1.lat, v2.lon, v2.lat);
@@ -115,9 +115,9 @@ public class Router {
             GraphDB.Edge preEdge = ways.get(i - 1);
             GraphDB.Edge nextEdge = ways.get(i);
 
-            long prevVertex = route.get(i - 1);
-            long curVertex = route.get(i);
-            long nextVertex = route.get(i + 1);
+            Long prevVertex = route.get(i - 1);
+            Long curVertex = route.get(i);
+            Long nextVertex = route.get(i + 1);
 
             String preWayName = preEdge.getName();
             String nextWayName = nextEdge.getName();
@@ -143,10 +143,10 @@ public class Router {
     private static ArrayList<GraphDB.Edge> getWays(GraphDB g, List<Long> route) {
         ArrayList<GraphDB.Edge> ways = new ArrayList<>();
         for (int i = 1; i < route.size(); i++) {
-            long curVertex = route.get(i - 1);
-            long nextVertex = route.get(i);
+            Long curVertex = route.get(i - 1);
+            Long nextVertex = route.get(i);
             for (GraphDB.Edge e : g.neighbors(curVertex)) {
-                if (e.other(curVertex) == nextVertex) {
+                if (e.other(curVertex).equals(nextVertex)) {
                     ways.add(e);
                 }
             }
