@@ -4,12 +4,7 @@ import java.awt.BasicStroke;
 import java.awt.Color;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.util.Base64;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.awt.image.BufferedImage;
 import javax.imageio.ImageIO;
 import java.io.IOException;
@@ -285,8 +280,9 @@ public class MapServer {
      * @return A <code>List</code> of the full names of locations whose cleaned name matches the
      * cleaned <code>prefix</code>.
      */
+    //该方法负责获取指定前缀的字符串名字，而由对应的字符串名字获取实际的点，由getLocations负责
     public static List<String> getLocationsByPrefix(String prefix) {
-        return new LinkedList<>();
+        return graph.keysWithPrefixOf(prefix);
     }
 
     /**
@@ -302,7 +298,19 @@ public class MapServer {
      * "id" : Number, The id of the node. <br>
      */
     public static List<Map<String, Object>> getLocations(String locationName) {
-        return new LinkedList<>();
+        ArrayList<Long> nodes = graph.getLocations(locationName);
+        //通常以Map<String,Object>的形式存储键值对,同一个名字对应的点不唯一，所以使用List来存储所有与该名字对应的点
+        List<Map<String, Object>> result = new ArrayList<>();
+        for (long i : nodes) {
+            Map<String, Object> nodeInfo = new HashMap<>();
+            GraphDB.Node node = graph.nodes.get(i);
+            nodeInfo.put("lat", node.lat);
+            nodeInfo.put("lon", node.lon);
+            nodeInfo.put("name", node.name);
+            nodeInfo.put("id", node.id);
+            result.add(nodeInfo);
+        }
+        return result;
     }
 
     /**

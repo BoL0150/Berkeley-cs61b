@@ -35,9 +35,11 @@ public class GraphDB {
     //一个名字可能对应多个点
     private Map<String, ArrayList<Long>> names = new HashMap<>();
 
-    private Map<Long,ArrayList<Edge>> adjEdge = new HashMap<>();
+    private Map<Long, ArrayList<Edge>> adjEdge = new HashMap<>();
 
-    public static class Edge{
+    private Trie<Long> trie = new Trie<>();
+
+    public static class Edge {
         private long v;
         private long w;
         private double weight;
@@ -49,9 +51,13 @@ public class GraphDB {
             this.weight = weight;
             this.name = name;
         }
-        public long either(){ return v;}
-        public long other(long vertex){
-            return vertex==v?w:v;
+
+        public long either() {
+            return v;
+        }
+
+        public long other(long vertex) {
+            return vertex == v ? w : v;
         }
 
         public double getWeight() {
@@ -62,7 +68,8 @@ public class GraphDB {
             return name;
         }
     }
-    public static class Node{
+
+    public static class Node {
         public final long id;
         public final double lon;
         public final double lat;
@@ -147,6 +154,7 @@ public class GraphDB {
     Iterable<Edge> neighbors(long v) {
         return adjEdge.get(v);
     }
+
     /**
      * Returns the great-circle distance between vertices v and w in miles.
      * Assumes the lon/lat methods are implemented properly.
@@ -209,7 +217,7 @@ public class GraphDB {
      */
     long closest(double lon, double lat) {
         double closest = Double.MAX_VALUE;
-        long ret=0;
+        long ret = 0;
         for (long id : vertices()) {
             double distance = distance(lon(id), lat(id), lon, lat);
             if (distance < closest) {
@@ -241,14 +249,16 @@ public class GraphDB {
         validateVertex(nodes.get(v));
         return nodes.get(v).lat;
     }
+
     String getName(long v) {
         if (nodes.get(v).name == null) {
             throw new IllegalArgumentException();
         }
         return nodes.get(v).name;
     }
+
     void addName(long id, double lon, double lat, String locationName) {
-        //将名字统一转换成小写
+        //将名字统一转换成小写，去除空格
         String cleanedName = cleanString(locationName);
 
         if (!names.containsKey(cleanedName)) {
@@ -256,6 +266,12 @@ public class GraphDB {
         }
         names.get(cleanedName).add(id);
         nodes.get(id).name = locationName;
+        trie.put(locationName, id);
+    }
+
+    //获取对应名字的点
+    ArrayList<Long> getLocations(String name) {
+        return names.get(name);
     }
 
     void addNode(long id, double lon, double lat) {
@@ -279,10 +295,15 @@ public class GraphDB {
         adjEdge.get(v).add(new Edge(v, w, distance(v, w), wayName));
         adjEdge.get(w).add(new Edge(v, w, distance(v, w), wayName));
     }
+
     void validateVertex(Node v) {
 
         if (!nodes.containsKey(v.id)) {
             throw new IllegalArgumentException("Vertex " + v + "is not in the graph");
         }
+    }
+
+    List<String> keysWithPrefixOf(String prefix) {
+        return (List<String>) trie.keyWithPrefix(prefix);
     }
 }
